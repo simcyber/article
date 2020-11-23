@@ -1,0 +1,619 @@
+<!DOCTYPE html><html lang="zh-cn"><head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="mebtte">
+<meta name="keywords" content="HTML,CSS,JavaScript,Web">
+
+<!-- open graph -->
+<meta property="og:type" content="website">
+<meta property="og:image" content="/article/6ed5faa0573b2a5a9d47232c9a71fb88.png">
+
+<link rel="shortcut icon" type="image/png" href="/article/6ed5faa0573b2a5a9d47232c9a71fb88.png">
+<link rel="sitemap" type="application/xml" href="/article/sitemap.xml">
+
+<link rel="preload" href="/article/dc2debd6c1aa714de8960f48d6f6f1d1.ttf" as="font" crossorigin="anonymous">
+<link rel="preload" href="/article/7ceed3c126da541a7aaee7d53bc1b5b7.ttf" as="font" crossorigin="anonymous">
+
+  <style>
+  @font-face {
+    font-family: common_font;
+    src: url(/article/7ceed3c126da541a7aaee7d53bc1b5b7.ttf);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    --primary-color: rgb(237, 106, 94);
+
+    --normal-color: #333;
+    --secondary-color: #888;
+    --tertiary-color: #ddd;
+    --backgroud: rgb(244, 244, 244);
+
+    --border-radius: 2px;
+    --transition-duration: 0.3s;
+
+    background-color: var(--backgroud);
+    transition: background-color var(--transition-duration);
+  }
+
+  body.dark-theme {
+    --normal-color: #eee;
+    --secondary-color: #888;
+    --tertiary-color: #444;
+    --backgroud: #333;
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const darkTheme = window.localStorage.getItem('dark_theme');
+    if (darkTheme) {
+      document.body.classList.remove('light-theme');
+      document.body.classList.add('dark-theme');
+    }
+  })
+</script>
+
+
+  <title>如何处理 RESTFUL 数据异常导致的前端错误 - Answer</title>
+
+  <link rel="preload" href="/article/160d517255b8aeb7d6dea753a85acb2d.ttf" as="font" crossorigin="anonymous">
+  <style>
+    @font-face {
+      font-family: article_font_handle_restful_api_error;
+      src: url(/article/160d517255b8aeb7d6dea753a85acb2d.ttf);
+    }
+    article {
+      font-family: article_font_handle_restful_api_error;
+    }
+  </style>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@5.2.0/distr/fira_code.min.css">
+  <link rel="stylesheet" href="/article/ece570de77ba673c17121d06fc929bd9.css">
+</head>
+
+<body class="light-theme">
+  <style>
+  @font-face {
+    font-family: title_font;
+    src: url(/article/dc2debd6c1aa714de8960f48d6f6f1d1.ttf);
+  }
+
+  .page-header {
+    max-width: 840px;
+    margin: 40px auto;
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+  }
+
+  .page-header_title {
+    flex: 1;
+    min-width: 0;
+    font-size: 64px;
+    font-family: title_font;
+    margin: 0;
+  }
+
+  h1.page-header_title  {
+    color: var(--normal-color);
+  }
+
+  h2.page-header_title {
+    color: var(--primary-color);
+  }
+
+  .page-header_title > a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .theme-changer {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    border: none;
+  }
+
+  .page-header_icon {
+    display: block;
+    margin-left: 16px;
+    user-select: none;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .dark-theme .page-header_icon__light-theme {
+    display: none;
+  }
+
+  .light-theme .page-header_icon__dark-theme {
+    display: none;
+  }
+</style>
+
+<header class="page-header">
+  
+    <h2 class="page-header_title">
+      <a href="/article/">Answer</a>
+    </h2>
+  
+  <button class="theme-changer" type="button">
+    <img class="page-header_icon page-header_icon__dark-theme" src="/article/c81f837b51ca388c1a54c51c5d0c6b15.png" alt="light theme">
+    <img class="page-header_icon page-header_icon__light-theme" src="/article/802654de2a9a0f0d2667e6aed83d682f.png" alt="dark theme">
+  </button>
+  <a href="/article/rss.xml">
+    <img class="page-header_icon page-header_icon__dark-theme" src="/article/6594d1f64750503bee10571143bd5019.png" alt="rss">
+    <img class="page-header_icon page-header_icon__light-theme" src="/article/e31ad23031e5bcb34e8d4a424ba0c100.png" alt="rss">
+  </a>
+  <a href="https://github.com/mebtte/article">
+    <img class="page-header_icon page-header_icon__dark-theme" src="/article/8a0ad2aed00666d6d2366358a4e6e9ad.png" alt="github">
+    <img class="page-header_icon page-header_icon__light-theme" src="/article/184c800e11079b13904f308161071b62.png" alt="github">
+  </a>
+</header>
+
+<script>
+  (() => {
+    const themeChanger = document.querySelector('.theme-changer');
+    themeChanger.addEventListener('click', () => {
+      if (document.body.classList.contains('dark-theme')) {
+        document.body.classList.remove('dark-theme');
+        document.body.classList.add('light-theme');
+        window.localStorage.removeItem('dark_theme');
+      } else {
+        document.body.classList.remove('light-theme');
+        document.body.classList.add('dark-theme');
+        window.localStorage.setItem('dark_theme', '1');
+      }
+    });
+  })()
+</script>
+
+  <article>
+    <style>
+.article-header {
+  max-width: 840px;
+  margin: 40px auto;
+  padding: 0 30px;
+}
+
+.article-title {
+  color: var(--normal-color);
+  font-size: 32px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.article-title a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.article-create-time {
+  color: var(--secondary-color);
+  font-size: 14px;
+  font-family: common_font;
+}
+</style>
+
+<section class="article-header">
+  <h1 class="article-title">
+    <a href="/article/handle_restful_api_error">如何处理 RESTFUL 数据异常导致的前端错误</a>
+  </h1>
+  <time class="article-create-time">2019-05-30</time>
+</section>
+
+    <style>
+  code {
+    font-family: 'Fira Code' !important;
+  }
+
+  article a {
+    color: var(--normal-color);
+    text-decoration-color: var(--primary-color);
+  }
+
+  article h2, article h3, article h4, article h5, article h6 {
+    max-width: 840px;
+    padding: 0 30px;
+    margin: 0 auto;
+    line-height: 1.5;
+    color: var(--normal-color);
+  }
+
+  article h2 {
+    margin-top: 28px;
+    font-size: 28px;
+  }
+
+  article h3 {
+    margin-top: 26px;
+    font-size: 25px;
+  }
+
+  article h4 {
+    margin-top: 24px;
+    font-size: 22px;
+  }
+
+  article h5 {
+    margin-top: 22px;
+    font-size: 19px;
+  }
+
+  article h6 {
+    margin-top: 20px;
+    font-size: 16px;
+  }
+
+  article p {
+    max-width: 840px;
+    padding: 0 30px;
+    font-size: 16px;
+    margin: 15px auto;
+    line-height: 1.8;
+    color: var(--normal-color);
+  }
+
+  article p code {
+    padding: 0 4px;
+    border-radius: var(--border-radius);
+    background: rgba(237, 106, 94, 0.3);
+  }
+
+  article pre {
+    max-width: 840px !important;
+    margin: 15px auto !important;
+    font-size: 14px !important;
+    box-sizing: border-box;
+    border-radius: var(--border-radius) !important;
+    tab-size: 2 !important;
+    padding: 0 !important;
+  }
+
+  article pre code {
+    display: block;
+    margin: 20px 30px !important;
+    overflow: auto !important;
+    font-size: inherit !important;
+  }
+
+  article hr {
+    max-width: 840px;
+    margin: 40px auto;
+    border-color: var(--tertiary-color);
+  }
+
+  article blockquote {
+    max-width: 840px;
+    padding: 0 30px;
+    margin: 15px auto;
+    position: relative;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--secondary-color);
+  }
+
+  .table-container {
+    max-width: 840px;
+    padding: 0 30px;
+    margin: 15px auto;
+  }
+
+  .table-container table {
+    border-collapse: collapse;
+  }
+
+  .table-container td {
+    font-size: 14px;
+    color: var(--normal-color);
+    border: 1px solid var(--tertiary-color);
+    padding: 10px;
+  }
+
+  article blockquote::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 30px;
+    width: 3px;
+    height: 100%;
+    background-color: var(--primary-color);
+  }
+
+  article blockquote p {
+    font-size: 14px;
+    color: inherit;
+    max-width: unset;
+    padding: 0;
+    margin: 0 0 0 30px;
+  }
+
+  article ul,
+  article ol {
+    max-width: 840px;
+    padding: 0 30px;
+    margin: 15px auto;
+    color: var(--normal-color);
+    line-height: 1.5;
+  }
+  
+  article ul li, article ol li {
+    display: block;
+    margin: 5px 0;
+    position: relative;
+  }
+
+  article ul li::before, article ol li::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: calc(50% - 2px);
+    left: -15px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--normal-color);
+  }
+
+  article figcaption {
+    font-size: 12px;
+    color: var(--secondary-color);
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  .figure-img {
+    max-width: 840px;
+    padding: 0 30px;
+    margin: 15px auto;
+  }
+
+  .figure-img img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    border-radius: var(--border-radius);
+  }
+
+  .figure-iframe {
+    width: 100%;
+    margin: 15px 0;
+  }
+
+  .figure-iframe iframe {
+    display: block;
+    width: 100%;
+    max-width: 840px;
+    margin: 0 auto;
+    height: 640px;
+    border: none;
+    border-radius: var(--border-radius);
+  }
+</style>
+
+<section>
+  <p>最近一段时间监控平台收集了很多 JS 错误，大部分都是<code>TypeError</code></p>
+<pre><code class="txt language-txt">Uncaught TypeError: Cannot read property &apos;xxx&apos; of null
+</code></pre>
+<p>经过排查后发现基本都是因为接口数据错误的导致，比如</p>
+<pre><code class="js language-js">// &#x6B63;&#x5E38;&#x6570;&#x636E;
+{
+  &quot;data&quot;: {
+    &quot;name&quot;: &quot;xxx&quot;,
+  },
+}
+
+// &#x9519;&#x8BEF;&#x6570;&#x636E;
+{
+  &quot;data&quot;: null,
+}
+</code></pre>
+<p>data 应该是一个对象，如果返回 null 的话访问<code>data.name</code>就会产生<code>TypeError</code>。
+至于接口为什么会返回错误的数据，原因有很多种</p>
+<ul>
+<li>接口本身 BUG</li>
+<li>手动修改数据库</li>
+<li>其他接口 BUG 导致错误地修改了数据</li>
+<li>…</li>
+</ul>
+<p>修复这些错误其实很简单，比如访问<code>data</code>之前先判断<code>data</code>是否为<code>null</code></p>
+<pre><code class="js language-js">data ? data.name : &apos;&apos;;
+// &#x5728;&#x5176;&#x4ED6;&#x7684;&#x4E00;&#x4E9B;&#x8BED;&#x8A00;&#x4E2D;&#x6709;`?.`&#x64CD;&#x4F5C;&#x7B26;&#x53EF;&#x4EE5;&#x5F88;&#x65B9;&#x4FBF;&#x5730;&#x8FDB;&#x884C;&#x4E0A;&#x9762;&#x7684;&#x64CD;&#x4F5C;
+</code></pre>
+<p>但同时也会带来一些问题。</p>
+<p>比如<code>name</code>是要显示在页面上，<code>&#x6211;&#x7684;&#x540D;&#x5B57;&#x662F;xxx&#xFF0C;&#x6211;&#x559C;&#x6B22;&#x5531;&#x8DF3;RAP&#x548C;&#x7BEE;&#x7403;</code>，因为缺失了<code>name</code>，所以变成了<code>&#x6211;&#x7684;&#x540D;&#x5B57;&#x662F;&#xFF0C;&#x6211;&#x559C;&#x6B22;&#x5531;&#x8DF3;RAP&#x548C;&#x7BEE;&#x7403;</code>。
+这会对用户造成一些困扰。
+在一些涉及到交易的场景可能会造成更大的麻烦。</p>
+<p>另一个问题是如果接口数据复杂一点的话，为了避免报错你的页面可能会有很多判断的语句</p>
+<pre><code class="js language-js">{
+  data: {
+    user: { name: &apos;xxx&apos; },
+    theme: { color: &apos;red&apos; },
+  },
+}
+
+// &#x8BBF;&#x95EE;`user.name`
+data ? (data.user ? data.user.name : &apos;&apos;) : &apos;&apos;;
+// &#x6216;&#x8005;
+(data &amp;&amp; data.user &amp;&amp; data.user.name) || &apos;&apos;;
+
+// &#x8BBF;&#x95EE;`theme.color`
+data ? (data.theme ? data.theme.color : &apos;&apos;) : &apos;&apos;;
+// &#x6216;&#x8005;
+(data &amp;&amp; data.theme &amp;&amp; data.theme.color) || &apos;&apos;;
+</code></pre>
+<p>对于这类问题，我的观点是<strong>数据异常的页面不应该展示给用户</strong>。所以，应该对接口的数据进行校验。</p>
+<p><code>npm</code>上有很多优秀的数据校验包，比如 <a href="https://www.npmjs.com/package/ajv">ajv</a>，<a href="https://www.npmjs.com/package/@hapi/joi">joi</a> 这些，以<code>joi</code>为例。</p>
+<p>统一接口格式</p>
+<pre><code class="js language-js">{
+  error_code: &quot;&#x9519;&#x8BEF;&#x7801;&#xFF0C;&#x6B63;&#x5E38;&#x4E3A;0&quot;,
+  error_message: &quot;&#x9519;&#x8BEF;&#x4FE1;&#x606F;&#xFF0C;&#x6B63;&#x5E38;&#x4E3A;&apos;&apos;&quot;,
+  data: &quot;&#x6570;&#x636E;&quot;,
+}
+</code></pre>
+<p>封装请求</p>
+<pre><code class="js language-js">// request.js
+import axios from &apos;axios&apos;; // &#x6216; window.fetch
+
+const request = async (options) =&gt; {
+  const response = await axios(options);
+  const {
+    error_code: errorCode,
+    error_message: errorMessage,
+    data,
+  } = response.data;
+  if (errorCode !== 0) {
+    throw new Error(`${errorCode}:${errorMessage}`);
+  }
+
+  // shcema &#x8868;&#x793A; joi &#x5BF9;&#x8C61;
+  // &#x9A8C;&#x8BC1;&#x6570;&#x636E;&#xFF0C;&#x90E8;&#x5206;&#x63A5;&#x53E3;&#x53EF;&#x80FD;&#x4E0D;&#x9700;&#x8981;&#x9A8C;&#x8BC1;&#xFF0C;&#x6240;&#x4EE5; schema &#x662F;&#x53EF;&#x9009;&#x53C2;&#x6570;
+  if (options.schema) {
+    // validate &#x662F; joi &#x5BF9;&#x8C61;&#x81EA;&#x5E26;&#x7684;&#x65B9;&#x6CD5;&#x7528;&#x4E8E;&#x9A8C;&#x8BC1;&#x6570;&#x636E;
+    const { error } = schema.validate(data);
+
+    // &#x6570;&#x636E;&#x9A8C;&#x8BC1;&#x5931;&#x8D25;
+    if (error) {
+      // &#x4E0A;&#x62A5;&#x6570;&#x636E;&#x683C;&#x5F0F;&#x9519;&#x8BEF;&#xFF0C;&#x5BF9;&#x4E8E;&#x4E00;&#x4E9B;&#x7B80;&#x5355;&#x7684;&#x6570;&#x636E;&#x9519;&#x8BEF;&#x53EF;&#x4EE5;&#x53CA;&#x65F6;&#x4FEE;&#x6539;&#x6570;&#x636E;&#x5E93;
+      reportDataError();
+      throw error;
+    }
+  }
+
+  return data;
+};
+
+export default request;
+</code></pre>
+<p>以<code>react</code>为例，调用请求</p>
+<pre><code class="jsx language-jsx">import React, { useState, useEffect } from &apos;react&apos;;
+import Joi from &apos;@hapi/joi&apos;;
+
+import request from &apos;./path/request&apos;;
+
+// schema
+const schema = Joi.object().keys({
+  user: Joi.object().keys({
+    name: Joi.string().required(),
+  }),
+  theme: Joi.object().keys({
+    color: Joi.string().required(),
+  }),
+});
+
+const Component = () =&gt; {
+  const [status, setStatus] = useState(&apos;loading&apos;);
+  const [data, setData] = useState(null);
+
+  useEffect(() =&gt; {
+    request({
+      method: &apos;get&apos;,
+      url: &apos;/user&apos;,
+      schema,
+    })
+      .then((user) =&gt; {
+        setStatus(&apos;success&apos;);
+        setUser(user);
+      })
+      .catch(() =&gt; setStatus(&apos;error&apos;));
+  }, []);
+
+  if (status === &apos;success&apos;) {
+    // &#x4FDD;&#x8BC1;&#x4E86;&#x53EF;&#x4EE5;&#x6B63;&#x786E;&#x5730;&#x83B7;&#x53D6;&#x53D8;&#x91CF;&#xFF0C;&#x6E32;&#x67D3;&#x8FC7;&#x7A0B;&#x4E2D;&#x4E0D;&#x4F1A;&#x62A5;&#x9519;
+    return &lt;div style={{ color: data.theme.color }}&gt;{data.user.name}&lt;/duv&gt;;
+  }
+  if (status === &apos;loading&apos;) {
+    return &lt;div&gt;loading&lt;/div&gt;;
+  }
+  return &lt;div&gt;error&lt;/div&gt;;
+};
+</code></pre>
+<p>当调用请求的时候，数据格式或数据出错可以显式地抛出错误让组件捕获，可以保证用户看到的页面一定是正确的，否则只会看到错误页面。
+可以对请求进一步封装，如果多个组件调用就不需要重复定义<code>schema</code></p>
+<pre><code class="js language-js">// getUserInfo.js
+import Joi from &apos;joi&apos;;
+
+import request from &apos;./path/request&apos;;
+
+const schema = Joi.object().keys({
+  user: Joi.object().keys({
+    name: Joi.string().required(),
+  }),
+  theme: Joi.object().keys({
+    color: Joi.string().required(),
+  }),
+});
+
+export default () =&gt;
+  request({
+    method: &apos;get&apos;,
+    url: &apos;/user&apos;,
+    schema,
+  });
+</code></pre>
+<p>当然，上面只是前端的一种预防方案，最重要应该还是在接口层面保证数据的完整性和正确性。</p>
+</section>
+
+    
+  </article>
+  
+<style>
+  .article-action {
+    max-width: 840px;
+    margin: 40px auto;
+    padding: 0 30px;
+    font-family: common_font;
+    color: var(--normal-color);
+  }
+  .article-action > a {
+    color: inherit;
+    text-decoration-color: var(--primary-color);
+  }
+</style>
+
+<p class="article-action">
+  本文使用
+  <a href="https://github.com/mebtte/article/issues">Issues</a>
+  讨论或直接在
+  <a href="https://github.com/mebtte/article/edit/master/articles/handle_restful_api_error/index.md">Github</a>
+  编辑.
+</p>
+
+  <style>
+.page-footer{
+  font-size: 12px;
+  max-width: 840px;
+  margin: 40px auto;
+  padding: 0 30px;
+  font-family: common_font;
+  color: var(--secondary-color);
+}
+
+.page-footer > a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.page-footer > a:hover {
+  color: var(--primary-color);
+}
+</style>
+
+<footer class="page-footer">
+  <a href="https://github.com/mebtte/article/blob/master/LICENSE">©</a> 2020
+  <a href="https://mebtte.com">MEBTTE</a>
+</footer>
+
+
+  <script src="/article/39c97c2884c3a2b5e64c8f085b843d4e.js"></script>
+
+
+
+</body></html>
